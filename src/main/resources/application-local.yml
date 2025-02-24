@@ -1,0 +1,26 @@
+spring:
+  security:
+    # possible values: none, all, changing (With changing, only changing requests such as POST, PUT, DELETE are logged)
+    logging.requests: all
+    oauth2:
+      resource:
+        user-info-uri: ${keycloak.auth-server-url}/realms/${realm}/protocol/openid-connect/userinfo
+      resourceserver:
+        jwt:
+          issuer-uri: ${keycloak.auth-server-url}/realms/${realm}
+          jwk-set-uri: ${keycloak.auth-server-url}/realms/${realm}/protocol/openid-connect/certs
+
+# Define the local keycloak realm here
+realm: Dave
+keycloak:
+  auth-server-url: https://ssodev.muenchen.de/auth
+
+server:
+  port: 8089
+
+# S3
+refarch.s3:
+  url: s3k.muenchen.de
+  bucket-name: int-davek-lapas
+  access-key: ${S3_ACCESS_KEY}
+  secret-key: ${S3_SECRET_KEY}
