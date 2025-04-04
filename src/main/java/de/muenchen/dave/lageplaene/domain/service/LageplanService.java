@@ -4,8 +4,10 @@ import de.muenchen.dave.errorhandling.ResourceNotFoundException;
 import de.muenchen.dave.lageplaene.api.dto.DocumentDto;
 import de.muenchen.refarch.integration.s3.adapter.out.s3.S3Adapter;
 import de.muenchen.refarch.integration.s3.domain.exception.FileSystemAccessException;
+import de.muenchen.refarch.integration.s3.domain.model.FileMetadata;
 import io.minio.http.Method;
-import java.util.List;
+
+import java.util.Comparator;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,11 +33,16 @@ public class LageplanService {
     }
 
     /**
-     * Liefert die Lageplan-Informationen für eine bestimmte Messstelle zurück.
+     * Liefert den aktuellsten Lageplan für eine gegebene Messstelle zurück.
+     *
+     * @param mstId zur Ermittlung des Speicherorts des Lageplans.
+     * @return die Presigned-URL zum holen des aktuellsten Lageplans.
+     * @throws FileSystemAccessException
+     * @throws ResourceNotFoundException
      */
-    public DocumentDto getLageplan(final String mstId) throws FileSystemAccessException, ResourceNotFoundException {
+    public DocumentDto getNewestLageplanForGivenMessstelleId(final String mstId) throws FileSystemAccessException, ResourceNotFoundException {
         final String pathToLageplan = buildPathToLageplan(lageplaeneBasePath, mstId);
-        final Optional<String> filePath = getFirstFileFromFolder(pathToLageplan);
+        final Optional<String> filePath = getFilePathOfNewestFileInFolderAndSubfolder(pathToLageplan);
         if (filePath.isPresent()) {
             final String url = s3Adapter.getPresignedUrl(filePath.get(), Method.GET, expirationInMinutes);
             return new DocumentDto(url);
@@ -47,30 +54,28 @@ public class LageplanService {
 
     /**
      * Liefert zurück, ob für eine bestimmte Messstelle ein Lageplan existiert.
+     *
+     * @param mstId zur Ermittlung des Speicherorts des Lageplans.
+     * @return true falls ein Lageplan exitiert andernfalls false.
+     * @throws FileSystemAccessException
+     * @throws ResourceNotFoundException
      */
-    public Boolean lageplanExists(final String mstId) throws FileSystemAccessException {
+    public Boolean lageplanForGivenMessstelleIdExists(final String mstId) throws FileSystemAccessException {
         final String pathToLageplan = buildPathToLageplan(lageplaeneBasePath, mstId);
-        final Optional<String> filePath = getFirstFileFromFolder(pathToLageplan);
+        final Optional<String> filePath = getFilePathOfNewestFileInFolderAndSubfolder(pathToLageplan);
         return filePath.isPresent();
     }
 
-    private Optional<String> getFirstFileFromFolder(final String pathToFile) throws FileSystemAccessException {
+    protected Optional<String> getFilePathOfNewestFileInFolderAndSubfolder(final String pathToFile) throws FileSystemAccessException {
         try {
-            List<String> list = s3Adapter.getFilePathsFromFolder(pathToFile).stream()
-                    // ignore paths that represent the parent folder itself
-                    .filter(path -> !path.equals(pathToFile))
-                    .toList();
-            if (list.isEmpty()) {
-                return Optional.empty();
-            }
-            if (list.size() > 1) {
-                log.warn("Achtung: mehr als eine Datei gefunden: {}", pathToFile);
-            }
-            return Optional.of(list.getFirst());
-        } catch (FileSystemAccessException e) {
+            return s3Adapter.getMetadataOfFilesFromFolder(pathToFile).stream()
+                    .max(Comparator.comparing(FileMetadata::lastModified))
+                    .map(FileMetadata::pathToFile);
+        } catch (FileSystemAccessException exception) {
             log.error("Fehler beim Auslesen des Folders: {}", pathToFile);
-            throw e;
+            throw exception;
         }
+
     }
 
     private String buildPathToLageplan(final String lageplaeneBasePath, String mstId) {
