@@ -29,7 +29,7 @@ public class LageplanController {
     private final LageplanService lageplanService;
 
     @GetMapping
-    @Operation(summary = "Liefert den Lageplan zur spezifizierten Messstelle.")
+    @Operation(summary = "Liefert den aktuellsten Lageplan für eine gegebene Messstelle.")
     @ApiResponses(
             value = {
                     @ApiResponse(responseCode = "200", description = "Der Lageplan wurde erfolgreich abgefragt."),
@@ -39,8 +39,8 @@ public class LageplanController {
     )
     public ResponseEntity<DocumentDto> getLageplan(@RequestParam(value = "mstId") @NotBlank final String mstId)
             throws FileSystemAccessException, ResourceNotFoundException {
-        log.info("Abfrage des Lageplans: {}", mstId);
-        final DocumentDto dto = lageplanService.getLageplan(mstId);
+        log.info("Abfrage des aktuellsten Lageplans: {}", mstId);
+        final DocumentDto dto = lageplanService.getNewestLageplanForGivenMessstelleId(mstId);
         return ResponseEntity.ok(dto);
     }
 
@@ -54,7 +54,7 @@ public class LageplanController {
     )
     public ResponseEntity<Boolean> lageplanExists(@RequestParam(value = "mstId") @NotBlank final String mstId) throws FileSystemAccessException {
         log.debug("Abfrage auf Lageplan: {}", mstId);
-        final Boolean hasLageplan = lageplanService.lageplanExists(mstId);
+        final Boolean hasLageplan = lageplanService.lageplanForGivenMessstelleIdExists(mstId);
         return ResponseEntity.ok(hasLageplan);
     }
 }
