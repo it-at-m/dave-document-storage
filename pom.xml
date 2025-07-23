@@ -21,12 +21,12 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <maven.compiler.release>${java.version}</maven.compiler.release>
-        <spring.boot.version>3.4.4</spring.boot.version>
-        <spring.cloud.version>2024.0.1</spring.cloud.version>
-        <logstash.encoder>7.4</logstash.encoder>
-        <apache.commons.collections4>4.4</apache.commons.collections4>
+        <spring.boot.version>3.5.3</spring.boot.version>
+        <spring.cloud.version>2025.0.0</spring.cloud.version>
+        <logstash.encoder>8.1</logstash.encoder>
+        <apache.commons.collections4>4.5.0</apache.commons.collections4>
         <apache.commons.io>2.18.0</apache.commons.io>
-        <apache.commons.lang3>3.17.0</apache.commons.lang3>
+        <apache.commons.lang3>3.18.0</apache.commons.lang3>
         <springdoc.version>2.7.0</springdoc.version>
         <!-- SonarQube -->
         <sonar.scanner.version>3.9.0.2155</sonar.scanner.version>
@@ -34,13 +34,13 @@
         <jacoco.version>0.8.8</jacoco.version>
         <!-- Plugins -->
         <maven-scm-plugin.version>2.1.0</maven-scm-plugin.version>
-        <maven-surefire-plugin.version>3.5.2</maven-surefire-plugin.version>
-        <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
+        <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
+        <maven.compiler.plugin.version>3.14.0</maven.compiler.plugin.version>
         <!-- Version muss mit der in den spring-boot-dependencies bereitgestellten Lombok-Version übereinstimmen -->
-        <org.projectlombok.lombok.version>1.18.36</org.projectlombok.lombok.version>
+        <org.projectlombok.lombok.version>1.18.38</org.projectlombok.lombok.version>
         <org.projectlombok.mapstructbinding.version>0.2.0</org.projectlombok.mapstructbinding.version>
         <mapstruct.version>1.6.3</mapstruct.version>
-        <openapi-generator-version>7.10.0</openapi-generator-version>
+        <openapi-generator-version>7.13.0</openapi-generator-version>
     </properties>
 
     <dependencyManagement>
@@ -227,7 +227,7 @@
         <dependency>
             <groupId>de.muenchen.refarch</groupId>
             <artifactId>refarch-s3-integration-java-client-starter</artifactId>
-            <version>1.5.0</version>
+            <version>2.1.0</version>
         </dependency>
 
     </dependencies>
