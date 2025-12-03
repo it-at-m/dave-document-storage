@@ -11,7 +11,7 @@
 
     <groupId>de.muenchen.dave</groupId>
     <artifactId>dave-document-storage</artifactId>
-    <version>1.0.0</version>
+    <version>3.0.0</version>
     <name>dave-document-storage</name>
     <description>DAVe Document-Storage</description>
 
