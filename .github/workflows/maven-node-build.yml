@@ -15,10 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         include: # hier müssen die Pfade angegeben werden
-          - app-path: refarch-backend
-          - app-path: refarch-frontend
-          - app-path: refarch-eai
-          - app-path: refarch-webcomponent
+          - app-path: .
 
     steps:
       - uses: it-at-m/lhm_actions/action-templates/actions/action-checkout@12966547963631f8429d42bab860485b413003c2 # v1.0.22
@@ -36,7 +33,7 @@ jobs:
         uses: it-at-m/lhm_actions/action-templates/actions/action-build-image@12966547963631f8429d42bab860485b413003c2 # v1.0.22
         with:
           path: ${{ matrix.app-path }}
-          image-name: ${{ matrix.app-path }}
+          image-name: dave-document-storage
           artifact-name: ${{ join(steps.*.outputs.artifact-name) }}
           registry-password: ${{ secrets.GITHUB_TOKEN }}
           registry-username: ${{ github.actor }}

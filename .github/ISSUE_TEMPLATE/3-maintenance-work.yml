@@ -12,19 +12,6 @@ body:
   - type: markdown
     attributes:
       value: "## General"
-  - type: dropdown
-    id: template
-    attributes:
-      label: Relevant template
-      multiple: true
-      description: Name(s) of the affected template(s) (if applicable)
-      options:
-        - refarch-frontend
-        - refarch-backend
-        - refarch-eai
-        - refarch-webcomponent
-    validations:
-      required: false
   - type: textarea
     id: problem-description
     attributes:

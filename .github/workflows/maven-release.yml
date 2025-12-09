@@ -11,13 +11,6 @@ on:
         description: "Version to use for new local working copy (e.g., 1.2.4-SNAPSHOT)"
         required: true
         default: 0.0.2-SNAPSHOT
-      app-path:
-        type: choice
-        description: Service-Name
-        required: true
-        options:
-          - refarch-backend
-          - refarch-eai
 
 jobs:
   release-maven:
@@ -31,7 +24,7 @@ jobs:
       - id: maven-release-step
         uses: it-at-m/lhm_actions/action-templates/actions/action-maven-release@12966547963631f8429d42bab860485b413003c2 # v1.0.22
         with:
-          app-path: ${{ github.event.inputs.app-path }}
+          app-path: .
           releaseVersion: ${{ github.event.inputs.releaseVersion }}
           developmentVersion: ${{ github.event.inputs.developmentVersion }}
           SIGN_KEY_PASS: ${{ secrets.gpg_passphrase }}
@@ -45,8 +38,8 @@ jobs:
     steps:
       - uses: it-at-m/lhm_actions/action-templates/actions/action-build-image@12966547963631f8429d42bab860485b413003c2 # v1.0.22
         with:
-          path: ${{ github.event.inputs.app-path }}
-          image-name: ${{ github.event.inputs.app-path }}
+          path: .
+          image-name: dave-document-storage
           registry-password: ${{ secrets.GITHUB_TOKEN }}
           artifact-name: ${{ needs.release-maven.outputs.ARTIFACT_NAME }}
           registry-username: ${{ github.actor }}
@@ -62,5 +55,5 @@ jobs:
         uses: it-at-m/lhm_actions/action-templates/actions/action-create-github-release@12966547963631f8429d42bab860485b413003c2 # v1.0.22
         with:
           artifact-name: ${{ needs.release-maven.outputs.ARTIFACT_NAME }}
-          tag-name: ${{ inputs.app-path }}-${{ github.event.inputs.releaseVersion }}
-          artifact-path: ${{ github.event.inputs.app-path }}/target/*.jar
+          tag-name: dave-document-storage-${{ github.event.inputs.releaseVersion }}
+          artifact-path: ./target/*.jar
