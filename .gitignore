@@ -185,3 +185,4 @@ nbdist/
 *.njsproj
 *.sln
 *.sw?
+/src/main/resources/application-local.yml
