@@ -1,14 +1,12 @@
 name: build maven and image
 
-on: 
-  push:
-    branches: ["sprint", "main", "demo"]
+on:
   workflow_dispatch:
     inputs:
       tag:
         description: 'What should the image be tagged as?'
         required: false
-        default: 'sprint'
+        default: 'dev'
 
 env:
   IMAGE_NAME: "dave-document-storage"
