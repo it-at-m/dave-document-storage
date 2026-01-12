@@ -1,2 +1,2 @@
-# Alle Textdateien (* text=auto) sollen den Unix-Zeilenumbruch (eol=lf) nutzen
+# All text files (* text=auto) should use the Unix line break (eol=lf) when commiting
 * text=auto eol=lf
