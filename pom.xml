@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>de.muenchen.dave</groupId>
     <artifactId>dave-document-storage</artifactId>
-    <version>3.0.0-SNAPSHOT</version>
+    <version>3.0.1</version>
     <name>dave-document-storage</name>
     <description>DAVe Document-Storage</description>
 
@@ -228,7 +227,7 @@
     <scm>
         <connection>scm:git:https://github.com/it-at-m/dave-document-storage.git</connection>
         <url>https://github.com/it-at-m/dave-document-storage.git</url>
-        <tag>HEAD</tag>
+        <tag>dave-document-storage-3.0.1</tag>
     </scm>
 
     <build>
@@ -355,8 +354,8 @@
                         <eclipse>
                             <file>itm-java-codeformat/java_codestyle_formatter.xml</file>
                         </eclipse>
-                        <trimTrailingWhitespace/>
-                        <endWithNewline/>
+                        <trimTrailingWhitespace />
+                        <endWithNewline />
                     </java>
                 </configuration>
                 <executions>
