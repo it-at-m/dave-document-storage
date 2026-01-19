@@ -4,7 +4,7 @@
 
     <groupId>de.muenchen.dave</groupId>
     <artifactId>dave-document-storage</artifactId>
-    <version>3.0.1</version>
+    <version>3.0.2-SNAPSHOT</version>
     <name>dave-document-storage</name>
     <description>DAVe Document-Storage</description>
 
@@ -227,7 +227,7 @@
     <scm>
         <connection>scm:git:https://github.com/it-at-m/dave-document-storage.git</connection>
         <url>https://github.com/it-at-m/dave-document-storage.git</url>
-        <tag>dave-document-storage-3.0.1</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <build>
