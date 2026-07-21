@@ -6,7 +6,6 @@ import de.muenchen.refarch.integration.s3.adapter.out.s3.S3Adapter;
 import de.muenchen.refarch.integration.s3.domain.exception.FileSystemAccessException;
 import de.muenchen.refarch.integration.s3.domain.model.FileMetadata;
 import io.minio.http.Method;
-
 import java.util.Comparator;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
