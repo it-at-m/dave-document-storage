@@ -367,6 +367,8 @@
                         </eclipse>
                         <trimTrailingWhitespace />
                         <endWithNewline />
+                        <importOrder />
+                        <removeUnusedImports />
                     </java>
                 </configuration>
                 <executions>
