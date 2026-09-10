@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class LageplanService {
 
-    @Value("${de.muenchen.dave.document-storage.lageplaene.bucket:test}")
+    @Value("${refarch.s3.bucket-name}")
     private String bucket;
 
     static final String SEPARATOR = "/";
