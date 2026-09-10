@@ -3,7 +3,7 @@ package de.muenchen.dave.lageplaene.api.controller;
 import de.muenchen.dave.errorhandling.ResourceNotFoundException;
 import de.muenchen.dave.lageplaene.api.dto.DocumentDto;
 import de.muenchen.dave.lageplaene.domain.service.LageplanService;
-import de.muenchen.refarch.integration.s3.domain.exception.FileSystemAccessException;
+import de.muenchen.oss.refarch.integration.s3.domain.exception.S3Exception;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -38,7 +38,7 @@ public class LageplanController {
             }
     )
     public ResponseEntity<DocumentDto> getLageplan(@RequestParam(value = "mstId") @NotBlank final String mstId)
-            throws FileSystemAccessException, ResourceNotFoundException {
+            throws S3Exception, ResourceNotFoundException {
         log.info("Abfrage des aktuellsten Lageplans: {}", mstId);
         final DocumentDto dto = lageplanService.getNewestLageplanForGivenMessstelleId(mstId);
         return ResponseEntity.ok(dto);
@@ -52,7 +52,7 @@ public class LageplanController {
                     @ApiResponse(responseCode = "500", description = "Bei der Bearbeitung des Requests ist ein Fehler aufgetreten.")
             }
     )
-    public ResponseEntity<Boolean> lageplanExists(@RequestParam(value = "mstId") @NotBlank final String mstId) throws FileSystemAccessException {
+    public ResponseEntity<Boolean> lageplanExists(@RequestParam(value = "mstId") @NotBlank final String mstId) throws S3Exception {
         log.debug("Abfrage auf Lageplan: {}", mstId);
         final Boolean hasLageplan = lageplanService.lageplanForGivenMessstelleIdExists(mstId);
         return ResponseEntity.ok(hasLageplan);
