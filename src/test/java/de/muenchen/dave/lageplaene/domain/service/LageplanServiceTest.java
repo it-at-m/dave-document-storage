@@ -72,7 +72,7 @@ class LageplanServiceTest {
         PresignedUrl presignedUrlObj = new PresignedUrl(new URL(presignedUrl), parentFolder, PresignedUrl.Action.GET);
         Mockito.when(s3Adapter.getPresignedUrl(fileReference, PresignedUrl.Action.GET, expiration)).thenReturn(presignedUrlObj);
 
-        DocumentDto result = lageplanService.getNewestLageplanForGivenMessstelleId(mstId);
+        DocumentDto result = lageplanService.getNewestLageplanForGivenMessstelleId(mstId).orElseGet(() -> new DocumentDto(""));
         DocumentDto expected = new DocumentDto(presignedUrl);
         Assertions.assertEquals(expected, result);
 
@@ -118,7 +118,7 @@ class LageplanServiceTest {
         PresignedUrl presignedUrlObj = new PresignedUrl(new URL(presignedUrl), fileMetadata2.path(), PresignedUrl.Action.GET);
         Mockito.when(s3Adapter.getPresignedUrl(fileReference, PresignedUrl.Action.GET, expiration)).thenReturn(presignedUrlObj);
 
-        DocumentDto result = lageplanService.getNewestLageplanForGivenMessstelleId(mstId);
+        DocumentDto result = lageplanService.getNewestLageplanForGivenMessstelleId(mstId).orElseGet(() -> new DocumentDto(""));
         DocumentDto expected = new DocumentDto(presignedUrl);
         Assertions.assertEquals(expected, result);
 
@@ -141,10 +141,8 @@ class LageplanServiceTest {
 
         Mockito.when(s3Adapter.getFilesWithPrefix(bucket, parentFolder, true)).thenReturn(new ListResult(List.of(), List.of(), false, null));
 
-        Assertions.assertThrows(
-                ResourceNotFoundException.class,
-                () -> lageplanService.getNewestLageplanForGivenMessstelleId(mstId),
-                "Kein Dokument gefunden: " + parentFolder);
+        Assertions.assertTrue(
+                lageplanService.getNewestLageplanForGivenMessstelleId(mstId).isEmpty());
         Mockito
                 .verify(s3Adapter, Mockito.times(1))
                 .getFilesWithPrefix(bucket, parentFolder, true);
@@ -170,9 +168,7 @@ class LageplanServiceTest {
         ListResult listResult = new ListResult(List.of(fileMetadata1), List.of(parentFolder), false, null);
         Mockito.when(s3Adapter.getFilesWithPrefix(bucket, parentFolder, true)).thenReturn(listResult);
 
-        final var result = lageplanService.lageplanForGivenMessstelleIdExists(mstId);
-
-        Assertions.assertTrue(result);
+        Assertions.assertTrue(lageplanService.lageplanForGivenMessstelleIdExists(mstId, parentFolder).isPresent());
 
         Mockito
                 .verify(s3Adapter, Mockito.times(1))
@@ -186,9 +182,7 @@ class LageplanServiceTest {
 
         Mockito.when(s3Adapter.getFilesWithPrefix(bucket, parentFolder, true)).thenReturn(new ListResult(List.of(), List.of(), false, null));
 
-        final var result = lageplanService.lageplanForGivenMessstelleIdExists(mstId);
-
-        Assertions.assertFalse(result);
+        Assertions.assertFalse(lageplanService.lageplanForGivenMessstelleIdExists(mstId, parentFolder).isPresent());
 
         Mockito
                 .verify(s3Adapter, Mockito.times(1))

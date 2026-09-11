@@ -1,6 +1,5 @@
 package de.muenchen.dave.lageplaene.domain.service;
 
-import de.muenchen.dave.errorhandling.ResourceNotFoundException;
 import de.muenchen.dave.lageplaene.api.dto.DocumentDto;
 import de.muenchen.oss.refarch.integration.s3.application.port.out.S3OutPort;
 import de.muenchen.oss.refarch.integration.s3.domain.exception.S3Exception;
@@ -37,23 +36,21 @@ public class LageplanService {
     }
 
     /**
-     * Liefert den aktuellsten Lageplan für eine gegebene Messstelle zurück.
+     * Liefert den aktuellen Lageplan für eine gegebene Messstelle zurück.
      *
      * @param mstId zur Ermittlung des Speicherorts des Lageplans.
-     * @return die Presigned-URL zum holen des aktuellsten Lageplans.
-     * @throws S3Exception
-     * @throws ResourceNotFoundException
+     * @return Optional<PresignedURL> zum Holen des aktuellen Lageplans.
      */
-    public DocumentDto getNewestLageplanForGivenMessstelleId(final String mstId) throws S3Exception, ResourceNotFoundException {
+    public Optional<DocumentDto> getNewestLageplanForGivenMessstelleId(final String mstId) throws S3Exception {
         final String pathToLageplan = buildPathToLageplan(lageplaeneBasePath, mstId);
-        final Optional<FileReference> filePath = getFilePathOfNewestFileInFolderAndSubfolder(new FileReference(bucket, pathToLageplan));
+        final Optional<FileReference> filePath = lageplanForGivenMessstelleIdExists(mstId, pathToLageplan);
         final Duration expiration = Duration.ofMinutes(expirationInMinutes);
         if (filePath.isPresent()) {
             final PresignedUrl url = s3Adapter.getPresignedUrl(filePath.get(), PresignedUrl.Action.GET, expiration);
-            return new DocumentDto(url.url().toExternalForm());
+            return Optional.of(new DocumentDto(url.url().toExternalForm()));
         } else {
-            log.error("Kein Dokument gefunden: {}", pathToLageplan);
-            throw new ResourceNotFoundException(pathToLageplan);
+            log.error("Kein Lageplan für Messstelle {} unter {} gefunden", mstId, pathToLageplan);
+            return Optional.empty();
         }
     }
 
@@ -61,20 +58,25 @@ public class LageplanService {
      * Liefert zurück, ob für eine bestimmte Messstelle ein Lageplan existiert.
      *
      * @param mstId zur Ermittlung des Speicherorts des Lageplans.
-     * @return true falls ein Lageplan exitiert andernfalls false.
-     * @throws S3Exception
-     * @throws ResourceNotFoundException
+     * @return Optional<FileReference>.
      */
-    public Boolean lageplanForGivenMessstelleIdExists(final String mstId) throws S3Exception {
-        final String pathToLageplan = buildPathToLageplan(lageplaeneBasePath, mstId);
+    public Optional<FileReference> lageplanForGivenMessstelleIdExists(final String mstId, final String pathToLageplan) throws S3Exception {
         final FileReference fileReference = new FileReference(bucket, pathToLageplan);
-        final Optional<FileReference> filePath = getFilePathOfNewestFileInFolderAndSubfolder(fileReference);
-        return filePath.isPresent();
+        return getFilePathOfNewestFileInFolderAndSubfolder(fileReference);
     }
 
+    /**
+     * Sucht die neueste Datei in einem gegebenen Ordner und dessen Unterordnern.
+     * Die neueste Datei wird anhand des Zeitstempels der letzten Änderung (lastModified)
+     * ermittelt.
+     *
+     * @param fileReference der Startordner (Bucket und Pfad) für die Suche nach der neuesten Datei.
+     * @return ein {@link Optional}, das die {@link FileReference} der neuesten Datei enthält,
+     *         oder {@link Optional#empty()}, falls keine Datei gefunden wurde.
+     * @throws S3Exception falls ein Fehler beim Auslesen der Dateien aus dem S3-Bucket auftritt.
+     */
     protected Optional<FileReference> getFilePathOfNewestFileInFolderAndSubfolder(final FileReference fileReference) throws S3Exception {
         try {
-
             Optional<String> path = s3Adapter.getFilesWithPrefix(fileReference.bucket(), fileReference.path(), true).files().stream()
                     .max(Comparator.comparing(FileMetadata::lastModified))
                     .map(FileMetadata::path);
