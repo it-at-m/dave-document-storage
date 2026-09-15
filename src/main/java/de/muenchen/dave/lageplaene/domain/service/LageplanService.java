@@ -22,15 +22,15 @@ public class LageplanService {
 
     static final String SEPARATOR = "/";
 
-    private final S3OutPort s3Adapter;
+    private final S3OutPort s3OutPort;
     private final String lageplaeneBasePath;
     private final Integer expirationInMinutes;
 
     public LageplanService(
-            final S3OutPort s3Adapter,
+            final S3OutPort s3OutPort,
             @Value("${de.muenchen.dave.document-storage.lageplaene.base-path}") final String basePath,
             @Value("${de.muenchen.dave.document-storage.lageplaene.expiration-in-minutes}") final Integer expirationInMinutes) {
-        this.s3Adapter = s3Adapter;
+        this.s3OutPort = s3OutPort;
         this.lageplaeneBasePath = basePath;
         this.expirationInMinutes = expirationInMinutes;
     }
@@ -40,13 +40,14 @@ public class LageplanService {
      *
      * @param mstId zur Ermittlung des Speicherorts des Lageplans.
      * @return Optional<PresignedURL> zum Holen des aktuellen Lageplans.
+     * @throws S3Exception falls ein Fehler beim Zugriff auf den S3-Bucket auftritt.
      */
     public Optional<DocumentDto> getNewestLageplanForGivenMessstelleId(final String mstId) throws S3Exception {
         final String pathToLageplan = buildPathToLageplan(lageplaeneBasePath, mstId);
         final Optional<FileReference> filePath = lageplanForGivenMessstelleIdExists(mstId, pathToLageplan);
         final Duration expiration = Duration.ofMinutes(expirationInMinutes);
         if (filePath.isPresent()) {
-            final PresignedUrl url = s3Adapter.getPresignedUrl(filePath.get(), PresignedUrl.Action.GET, expiration);
+            final PresignedUrl url = s3OutPort.getPresignedUrl(filePath.get(), PresignedUrl.Action.GET, expiration);
             return Optional.of(new DocumentDto(url.url().toExternalForm()));
         } else {
             log.error("Kein Lageplan für Messstelle {} unter {} gefunden", mstId, pathToLageplan);
@@ -59,6 +60,7 @@ public class LageplanService {
      *
      * @param mstId zur Ermittlung des Speicherorts des Lageplans.
      * @return Optional<FileReference>.
+     * @throws S3Exception falls ein Fehler beim Auslesen der Dateien aus dem S3-Bucket auftritt.
      */
     public Optional<FileReference> lageplanForGivenMessstelleIdExists(final String mstId, final String pathToLageplan) throws S3Exception {
         final FileReference fileReference = new FileReference(bucket, pathToLageplan);
@@ -77,7 +79,7 @@ public class LageplanService {
      */
     protected Optional<FileReference> getFilePathOfNewestFileInFolderAndSubfolder(final FileReference fileReference) throws S3Exception {
         try {
-            Optional<String> path = s3Adapter.getFilesWithPrefix(fileReference.bucket(), fileReference.path(), true).files().stream()
+            Optional<String> path = s3OutPort.getFilesWithPrefix(fileReference.bucket(), fileReference.path(), true).files().stream()
                     .max(Comparator.comparing(FileMetadata::lastModified))
                     .map(FileMetadata::path);
             return path.map(s -> new FileReference(fileReference.bucket(), s));

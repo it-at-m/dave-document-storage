@@ -25,7 +25,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(S3Exception.class)
-    public ResponseEntity<Object> handleFileSystemAccessException() {
+    public ResponseEntity<Object> handleS3Exception() {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 

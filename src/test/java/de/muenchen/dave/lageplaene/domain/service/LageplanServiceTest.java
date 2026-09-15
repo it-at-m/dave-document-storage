@@ -52,7 +52,7 @@ class LageplanServiceTest {
     }
 
     @Test
-    void testGetNewestLageplanForGivenMessstelleId_WithExistingFile() throws S3Exception, ResourceNotFoundException, MalformedURLException {
+    void testGetNewestLageplanForGivenMessstelleId_WithExistingFile() throws S3Exception, MalformedURLException {
 
         final String mstId = "4001";
         final String parentFolder = BASE_PATH + mstId + LageplanService.SEPARATOR;
@@ -88,7 +88,7 @@ class LageplanServiceTest {
     }
 
     @Test
-    void testGetNewestLageplanForGivenMessstelleId_WithExistingMultipleFiles() throws S3Exception, ResourceNotFoundException, MalformedURLException {
+    void testGetNewestLageplanForGivenMessstelleId_WithExistingMultipleFiles() throws S3Exception, MalformedURLException {
 
         final String mstId = "4001";
         final String parentFolder = BASE_PATH + mstId + LageplanService.SEPARATOR;

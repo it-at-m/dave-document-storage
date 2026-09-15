@@ -54,6 +54,7 @@ public class LageplanController {
             throw new ResourceNotFoundException("Der angefragte Lageplan wurde nicht gefunden.");
     }
 
+    @GetMapping("/exists")
     @Operation(summary = "Existiert für die spezifizierte Messstelle ein Lageplan?")
     @ApiResponses(
             value = {
