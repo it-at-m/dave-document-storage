@@ -3,7 +3,6 @@ package de.muenchen.dave.lageplaene.domain.service;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
-import de.muenchen.dave.errorhandling.ResourceNotFoundException;
 import de.muenchen.dave.lageplaene.api.dto.DocumentDto;
 import de.muenchen.oss.refarch.integration.s3.application.port.out.S3OutPort;
 import de.muenchen.oss.refarch.integration.s3.domain.exception.S3Exception;
