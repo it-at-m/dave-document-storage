@@ -10,12 +10,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 /**
  * The central class for configuration of all security aspects.
@@ -38,27 +39,27 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(request -> request
                         .requestMatchers(getPathMatchersForPermitAll())
                         .permitAll()
-                        .requestMatchers(AntPathRequestMatcher.antMatcher("/**"))
+                        .requestMatchers(PathPatternRequestMatcher.withDefaults().matcher("/**"))
                         .authenticated())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
                 .build();
     }
 
-    private AntPathRequestMatcher[] getPathMatchersForPermitAll() {
+    private PathPatternRequestMatcher[] getPathMatchersForPermitAll() {
         return Stream
                 .concat(
                         Stream.of(
                                 // allow access to /actuator/info
-                                AntPathRequestMatcher.antMatcher("/actuator/info"),
+                                PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/actuator/info"),
                                 // allow access to /actuator/health for OpenShift Health Check
-                                AntPathRequestMatcher.antMatcher("/actuator/health"),
+                                PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/actuator/health"),
                                 // allow access to /actuator/health/liveness for OpenShift Liveness Check
-                                AntPathRequestMatcher.antMatcher("/actuator/health/liveness"),
+                                PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/actuator/health/liveness"),
                                 // allow access to /actuator/health/readiness for OpenShift Readiness Check
-                                AntPathRequestMatcher.antMatcher("/actuator/health/readiness"),
+                                PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/actuator/health/readiness"),
                                 // allow access to /actuator/metrics for Prometheus monitoring in OpenShift
-                                AntPathRequestMatcher.antMatcher("/actuator/metrics")),
-                        Arrays.stream(whitelist).map(AntPathRequestMatcher::antMatcher))
-                .toArray(AntPathRequestMatcher[]::new);
+                                PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, "/actuator/metrics")),
+                        Arrays.stream(whitelist).map(whitelistUrl -> PathPatternRequestMatcher.withDefaults().matcher(whitelistUrl)))
+                .toArray(PathPatternRequestMatcher[]::new);
     }
 }
