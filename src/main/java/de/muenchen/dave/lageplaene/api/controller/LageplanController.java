@@ -11,7 +11,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.NotBlank;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,12 +26,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class LageplanController {
 
     private final LageplanService lageplanService;
-    private final String lageplaeneBasePath;
 
-    public LageplanController(LageplanService lageplanService,
-            @Value("${de.muenchen.dave.document-storage.lageplaene.base-path}") final String lageplaeneBasePath) {
+    public LageplanController(LageplanService lageplanService) {
         this.lageplanService = lageplanService;
-        this.lageplaeneBasePath = lageplaeneBasePath;
     }
 
     @GetMapping
@@ -64,6 +60,6 @@ public class LageplanController {
     )
     public ResponseEntity<Boolean> lageplanExists(@RequestParam(value = "mstId") @NotBlank final String mstId) throws S3Exception {
         log.debug("Abfrage auf Lageplan: {}", mstId);
-        return ResponseEntity.ok(lageplanService.lageplanForGivenMessstelleIdExists(mstId, lageplaeneBasePath).isPresent());
+        return ResponseEntity.ok(lageplanService.lageplanForGivenMessstelleIdExists(mstId).isPresent());
     }
 }

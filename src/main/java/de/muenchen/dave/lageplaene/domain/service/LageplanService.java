@@ -17,8 +17,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class LageplanService {
 
-    @Value("${refarch.s3.bucket-name}")
-    private String bucket;
+    private final String bucket;
 
     static final String SEPARATOR = "/";
 
@@ -28,8 +27,10 @@ public class LageplanService {
 
     public LageplanService(
             final S3OutPort s3OutPort,
+            @Value("${refarch.s3.bucket-name}") final String bucket,
             @Value("${de.muenchen.dave.document-storage.lageplaene.base-path}") final String basePath,
             @Value("${de.muenchen.dave.document-storage.lageplaene.expiration-in-minutes}") final Integer expirationInMinutes) {
+        this.bucket = bucket;
         this.s3OutPort = s3OutPort;
         this.lageplaeneBasePath = basePath;
         this.expirationInMinutes = expirationInMinutes;
@@ -43,14 +44,12 @@ public class LageplanService {
      * @throws S3Exception falls ein Fehler beim Zugriff auf den S3-Bucket auftritt.
      */
     public Optional<DocumentDto> getNewestLageplanForGivenMessstelleId(final String mstId) throws S3Exception {
-        final String pathToLageplan = buildPathToLageplan(lageplaeneBasePath, mstId);
-        final Optional<FileReference> filePath = lageplanForGivenMessstelleIdExists(mstId, pathToLageplan);
-        final Duration expiration = Duration.ofMinutes(expirationInMinutes);
+        final Optional<FileReference> filePath = lageplanForGivenMessstelleIdExists(mstId);
         if (filePath.isPresent()) {
-            final PresignedUrl url = s3OutPort.getPresignedUrl(filePath.get(), PresignedUrl.Action.GET, expiration);
+            final PresignedUrl url = s3OutPort.getPresignedUrl(filePath.get(), PresignedUrl.Action.GET, Duration.ofMinutes(expirationInMinutes));
             return Optional.of(new DocumentDto(url.url().toExternalForm()));
         } else {
-            log.error("Kein Lageplan für Messstelle {} unter {} gefunden", mstId, pathToLageplan);
+            log.error("Kein Lageplan für Messstelle {} unter {} gefunden", mstId, buildPathToLageplan(lageplaeneBasePath, mstId));
             return Optional.empty();
         }
     }
@@ -62,8 +61,8 @@ public class LageplanService {
      * @return Optional<FileReference>.
      * @throws S3Exception falls ein Fehler beim Auslesen der Dateien aus dem S3-Bucket auftritt.
      */
-    public Optional<FileReference> lageplanForGivenMessstelleIdExists(final String mstId, final String pathToLageplan) throws S3Exception {
-        final FileReference fileReference = new FileReference(bucket, pathToLageplan);
+    public Optional<FileReference> lageplanForGivenMessstelleIdExists(final String mstId) throws S3Exception {
+        final FileReference fileReference = new FileReference(bucket, buildPathToLageplan(lageplaeneBasePath, mstId));
         return getFilePathOfNewestFileInFolderAndSubfolder(fileReference);
     }
 
@@ -72,6 +71,25 @@ public class LageplanService {
      * Die neueste Datei wird anhand des Zeitstempels der letzten Änderung (lastModified)
      * ermittelt.
      *
+     * <p>
+     * <strong>Wichtig / Hinweis zur Paginierung:</strong><br>
+     * Diese Implementierung verwendet s3OutPort.getFilesWithPrefix(...).files() direkt und betrachtet
+     * nur die von dieser einzelnen Aufruf‑Seite zurückgegebenen Objekte. Das verwendete S3‑Adapter‑API
+     * (getFilesWithPrefix) liefert standardmäßig nur eine Seite der Ergebnisse (maximal 1000 Objekte
+     * pro Seite). Wenn mehr als 1000 Dateien unter dem angegebenen Präfix existieren, kann die Antwort
+     * paginiert sein (response.isTruncated() == true) — spätere Seiten werden hier nicht abgefragt.
+     * In diesem Fall ist das Ergebnis unvollständig und die tatsächlich neueste Datei (auf einer
+     * späteren
+     * Seite) wird möglicherweise übersehen.
+     * </p>
+     *
+     * <p>
+     * Empfehlung: Vor dem Bestimmen des neuesten Objekts alle Seiten aggregieren (ggf. über
+     * continuationToken / nextContinuationToken iterieren) oder die Port/Adapter‑API erweitern, sodass
+     * eine Methode zur Verfügung steht, die alle Dateien über alle Seiten zusammenfasst.
+     * </p>
+     *
+     *
      * @param fileReference der Startordner (Bucket und Pfad) für die Suche nach der neuesten Datei.
      * @return ein {@link Optional}, das die {@link FileReference} der neuesten Datei enthält,
      *         oder {@link Optional#empty()}, falls keine Datei gefunden wurde.
@@ -79,9 +97,11 @@ public class LageplanService {
      */
     protected Optional<FileReference> getFilePathOfNewestFileInFolderAndSubfolder(final FileReference fileReference) throws S3Exception {
         try {
+
             Optional<String> path = s3OutPort.getFilesWithPrefix(fileReference.bucket(), fileReference.path(), true).files().stream()
                     .max(Comparator.comparing(FileMetadata::lastModified))
                     .map(FileMetadata::path);
+
             return path.map(s -> new FileReference(fileReference.bucket(), s));
 
         } catch (S3Exception exception) {
@@ -90,7 +110,7 @@ public class LageplanService {
         }
     }
 
-    private String buildPathToLageplan(final String lageplaeneBasePath, String mstId) {
+    public String buildPathToLageplan(final String lageplaeneBasePath, String mstId) {
         return lageplaeneBasePath + (lageplaeneBasePath.endsWith(SEPARATOR) ? mstId : SEPARATOR + mstId) + SEPARATOR;
     }
 }

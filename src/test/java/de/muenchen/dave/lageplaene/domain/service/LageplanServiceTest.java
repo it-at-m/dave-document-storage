@@ -32,22 +32,23 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class LageplanServiceTest {
 
-    private static final String bucket = null;
+    private static final String BUCKET = "test";
     private static final String BASE_PATH = "DAVe/Messstellen/Lageplaene/";
     private static final Integer EXPIRATION = 30;
 
     @Mock
-    private S3OutPort s3Adapter;
+    private S3OutPort s3OutPort;
 
     private LageplanService lageplanService;
 
     @BeforeEach
     public void beforeEach() {
         lageplanService = new LageplanService(
-                s3Adapter,
+                s3OutPort,
+                BUCKET,
                 BASE_PATH,
                 EXPIRATION);
-        Mockito.reset(s3Adapter);
+        Mockito.reset(s3OutPort);
     }
 
     @Test
@@ -64,22 +65,22 @@ class LageplanServiceTest {
                 createInstant(2025, 1, 1, 12, 0, 0));
 
         ListResult listResult = new ListResult(List.of(fileMetadata1), List.of(parentFolder), false, null);
-        Mockito.when(s3Adapter.getFilesWithPrefix(bucket, parentFolder, true)).thenReturn(listResult);
+        Mockito.when(s3OutPort.getFilesWithPrefix(BUCKET, parentFolder, true)).thenReturn(listResult);
 
-        FileReference fileReference = new FileReference(bucket, parentFolder + mstId + "1.pdf");
+        FileReference fileReference = new FileReference(BUCKET, parentFolder + mstId + "1.pdf");
         final Duration expiration = Duration.ofMinutes(EXPIRATION);
         PresignedUrl presignedUrlObj = new PresignedUrl(new URL(presignedUrl), parentFolder, PresignedUrl.Action.GET);
-        Mockito.when(s3Adapter.getPresignedUrl(fileReference, PresignedUrl.Action.GET, expiration)).thenReturn(presignedUrlObj);
+        Mockito.when(s3OutPort.getPresignedUrl(fileReference, PresignedUrl.Action.GET, expiration)).thenReturn(presignedUrlObj);
 
         DocumentDto result = lageplanService.getNewestLageplanForGivenMessstelleId(mstId).orElseGet(() -> new DocumentDto(""));
         DocumentDto expected = new DocumentDto(presignedUrl);
         Assertions.assertEquals(expected, result);
 
         Mockito
-                .verify(s3Adapter, Mockito.times(1))
-                .getFilesWithPrefix(bucket, parentFolder, true);
+                .verify(s3OutPort, Mockito.times(1))
+                .getFilesWithPrefix(BUCKET, parentFolder, true);
         Mockito
-                .verify(s3Adapter, Mockito.times(1))
+                .verify(s3OutPort, Mockito.times(1))
                 .getPresignedUrl(
                         eq(fileReference),
                         eq(PresignedUrl.Action.GET),
@@ -110,22 +111,22 @@ class LageplanServiceTest {
                 createInstant(2025, 1, 1, 11, 0, 0));
 
         ListResult listResult = new ListResult(List.of(fileMetadata1, fileMetadata2, fileMetadata3), List.of(parentFolder), false, null);
-        Mockito.when(s3Adapter.getFilesWithPrefix(bucket, parentFolder, true)).thenReturn(listResult);
+        Mockito.when(s3OutPort.getFilesWithPrefix(BUCKET, parentFolder, true)).thenReturn(listResult);
 
-        FileReference fileReference = new FileReference(bucket, fileMetadata2.path());
+        FileReference fileReference = new FileReference(BUCKET, fileMetadata2.path());
         final Duration expiration = Duration.ofMinutes(EXPIRATION);
         PresignedUrl presignedUrlObj = new PresignedUrl(new URL(presignedUrl), fileMetadata2.path(), PresignedUrl.Action.GET);
-        Mockito.when(s3Adapter.getPresignedUrl(fileReference, PresignedUrl.Action.GET, expiration)).thenReturn(presignedUrlObj);
+        Mockito.when(s3OutPort.getPresignedUrl(fileReference, PresignedUrl.Action.GET, expiration)).thenReturn(presignedUrlObj);
 
         DocumentDto result = lageplanService.getNewestLageplanForGivenMessstelleId(mstId).orElseGet(() -> new DocumentDto(""));
         DocumentDto expected = new DocumentDto(presignedUrl);
         Assertions.assertEquals(expected, result);
 
         Mockito
-                .verify(s3Adapter, Mockito.times(1))
-                .getFilesWithPrefix(bucket, parentFolder, true);
+                .verify(s3OutPort, Mockito.times(1))
+                .getFilesWithPrefix(BUCKET, parentFolder, true);
         Mockito
-                .verify(s3Adapter, Mockito.times(1))
+                .verify(s3OutPort, Mockito.times(1))
                 .getPresignedUrl(
                         eq(fileReference),
                         eq(PresignedUrl.Action.GET),
@@ -138,15 +139,15 @@ class LageplanServiceTest {
         final String mstId = "4001";
         final String parentFolder = BASE_PATH + mstId + LageplanService.SEPARATOR;
 
-        Mockito.when(s3Adapter.getFilesWithPrefix(bucket, parentFolder, true)).thenReturn(new ListResult(List.of(), List.of(), false, null));
+        Mockito.when(s3OutPort.getFilesWithPrefix(BUCKET, parentFolder, true)).thenReturn(new ListResult(List.of(), List.of(), false, null));
 
         Assertions.assertTrue(
                 lageplanService.getNewestLageplanForGivenMessstelleId(mstId).isEmpty());
         Mockito
-                .verify(s3Adapter, Mockito.times(1))
-                .getFilesWithPrefix(bucket, parentFolder, true);
+                .verify(s3OutPort, Mockito.times(1))
+                .getFilesWithPrefix(BUCKET, parentFolder, true);
         Mockito
-                .verify(s3Adapter, Mockito.never())
+                .verify(s3OutPort, Mockito.never())
                 .getPresignedUrl(
                         any(FileReference.class),
                         any(PresignedUrl.Action.class),
@@ -165,13 +166,13 @@ class LageplanServiceTest {
                 createInstant(2025, 1, 1, 12, 0, 0));
 
         ListResult listResult = new ListResult(List.of(fileMetadata1), List.of(parentFolder), false, null);
-        Mockito.when(s3Adapter.getFilesWithPrefix(bucket, parentFolder, true)).thenReturn(listResult);
+        Mockito.when(s3OutPort.getFilesWithPrefix(BUCKET, parentFolder, true)).thenReturn(listResult);
 
-        Assertions.assertTrue(lageplanService.lageplanForGivenMessstelleIdExists(mstId, parentFolder).isPresent());
+        Assertions.assertTrue(lageplanService.lageplanForGivenMessstelleIdExists(mstId).isPresent());
 
         Mockito
-                .verify(s3Adapter, Mockito.times(1))
-                .getFilesWithPrefix(bucket, parentFolder, true);
+                .verify(s3OutPort, Mockito.times(1))
+                .getFilesWithPrefix(BUCKET, parentFolder, true);
     }
 
     @Test
@@ -179,13 +180,13 @@ class LageplanServiceTest {
         final String mstId = "4002";
         final String parentFolder = BASE_PATH + mstId + LageplanService.SEPARATOR;
 
-        Mockito.when(s3Adapter.getFilesWithPrefix(bucket, parentFolder, true)).thenReturn(new ListResult(List.of(), List.of(), false, null));
+        Mockito.when(s3OutPort.getFilesWithPrefix(BUCKET, parentFolder, true)).thenReturn(new ListResult(List.of(), List.of(), false, null));
 
-        Assertions.assertFalse(lageplanService.lageplanForGivenMessstelleIdExists(mstId, parentFolder).isPresent());
+        Assertions.assertFalse(lageplanService.lageplanForGivenMessstelleIdExists(mstId).isPresent());
 
         Mockito
-                .verify(s3Adapter, Mockito.times(1))
-                .getFilesWithPrefix(bucket, parentFolder, true);
+                .verify(s3OutPort, Mockito.times(1))
+                .getFilesWithPrefix(BUCKET, parentFolder, true);
     }
 
     @Test
@@ -200,16 +201,16 @@ class LageplanServiceTest {
                 createInstant(2025, 1, 1, 12, 0, 0));
 
         ListResult listResult = new ListResult(List.of(fileMetadata1), List.of(parentFolder), false, null);
-        Mockito.when(s3Adapter.getFilesWithPrefix(bucket, parentFolder, true)).thenReturn(listResult);
+        Mockito.when(s3OutPort.getFilesWithPrefix(BUCKET, parentFolder, true)).thenReturn(listResult);
 
-        FileReference fileReference = new FileReference(bucket, parentFolder);
+        FileReference fileReference = new FileReference(BUCKET, parentFolder);
         final var result = lageplanService.getFilePathOfNewestFileInFolderAndSubfolder(fileReference);
 
-        Assertions.assertEquals(Optional.of(new FileReference(bucket, fileMetadata1.path())), result);
+        Assertions.assertEquals(Optional.of(new FileReference(BUCKET, fileMetadata1.path())), result);
 
         Mockito
-                .verify(s3Adapter, Mockito.times(1))
-                .getFilesWithPrefix(bucket, parentFolder, true);
+                .verify(s3OutPort, Mockito.times(1))
+                .getFilesWithPrefix(BUCKET, parentFolder, true);
     }
 
     @Test
@@ -234,15 +235,15 @@ class LageplanServiceTest {
                 createInstant(2025, 1, 1, 11, 0, 0));
 
         ListResult listResult = new ListResult(List.of(fileMetadata1, fileMetadata2, fileMetadata3), List.of(parentFolder), false, null);
-        Mockito.when(s3Adapter.getFilesWithPrefix(bucket, parentFolder, true)).thenReturn(listResult);
+        Mockito.when(s3OutPort.getFilesWithPrefix(BUCKET, parentFolder, true)).thenReturn(listResult);
 
-        FileReference fileReference = new FileReference(bucket, parentFolder);
+        FileReference fileReference = new FileReference(BUCKET, parentFolder);
         final var result = lageplanService.getFilePathOfNewestFileInFolderAndSubfolder(fileReference);
 
-        Assertions.assertEquals(Optional.of(new FileReference(bucket, parentFolder + "file2.pdf")), result);
+        Assertions.assertEquals(Optional.of(new FileReference(BUCKET, parentFolder + "file2.pdf")), result);
 
-        Mockito.verify(s3Adapter, Mockito.times(1))
-                .getFilesWithPrefix(bucket, parentFolder, true);
+        Mockito.verify(s3OutPort, Mockito.times(1))
+                .getFilesWithPrefix(BUCKET, parentFolder, true);
     }
 
     @Test
@@ -250,16 +251,16 @@ class LageplanServiceTest {
         final String mstId = "4002";
         final String parentFolder = BASE_PATH + mstId + LageplanService.SEPARATOR;
 
-        Mockito.when(s3Adapter.getFilesWithPrefix(bucket, parentFolder, true)).thenReturn(new ListResult(List.of(), List.of(), false, null));
+        Mockito.when(s3OutPort.getFilesWithPrefix(BUCKET, parentFolder, true)).thenReturn(new ListResult(List.of(), List.of(), false, null));
 
-        FileReference fileReference = new FileReference(bucket, parentFolder);
+        FileReference fileReference = new FileReference(BUCKET, parentFolder);
         final var result = lageplanService.getFilePathOfNewestFileInFolderAndSubfolder(fileReference);
 
         Assertions.assertEquals(Optional.empty(), result);
 
         Mockito
-                .verify(s3Adapter, Mockito.times(1))
-                .getFilesWithPrefix(bucket, parentFolder, true);
+                .verify(s3OutPort, Mockito.times(1))
+                .getFilesWithPrefix(BUCKET, parentFolder, true);
     }
 
     private Instant createInstant(int year, int month, int day, int hour, int minute, int second) {

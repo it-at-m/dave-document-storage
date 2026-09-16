@@ -5,15 +5,19 @@ spring:
     location: banner.txt
   codec:
     max-in-memory-size: 52428800 # bytes
+  http:
+    codecs:
+      preferred-json-mapper: jackson2
+  web:
+    error:
+      include-exception: false
+      include-stacktrace: never
+      whitelabel:
+        enabled: false
 
 server:
   shutdown: "graceful"
   port: 8080
-  error:
-    include-exception: false
-    include-stacktrace: never
-    whitelabel:
-      enabled: false
 
 # Config for spring actuator endpoints
 management:
