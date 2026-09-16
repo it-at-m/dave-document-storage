@@ -6,7 +6,7 @@ spring:
   codec:
     max-in-memory-size: 52428800 # bytes
   http:
-    codecs:
+    converters:
       preferred-json-mapper: jackson2
   web:
     error:
