@@ -4,20 +4,27 @@
  */
 package de.muenchen.dave.configuration;
 
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
+import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import tools.jackson.core.StreamReadFeature;
 
 @Configuration
-@RequiredArgsConstructor
 public class JacksonConfiguration {
 
-    private final ObjectMapper objectMapper;
-
-    @PostConstruct
-    public void objectMapper() {
-        this.objectMapper.enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
+    @Bean
+    public ObjectMapper objectMapper() {
+        return new ObjectMapper();
     }
+
+    /**
+     * Aktiviert STRICT_DUPLICATE_DETECTION für Jackson 3 (JsonMapper).
+     * Wird über JsonMapperBuilderCustomizer auf den JsonMapper.Builder angewendet.
+     */
+    @Bean
+    public JsonMapperBuilderCustomizer jsonMapperBuilderCustomizer() {
+        return builder -> builder.enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION);
+    }
+
 }

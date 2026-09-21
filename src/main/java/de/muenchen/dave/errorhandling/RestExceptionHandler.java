@@ -4,7 +4,7 @@
  */
 package de.muenchen.dave.errorhandling;
 
-import de.muenchen.refarch.integration.s3.domain.exception.FileSystemAccessException;
+import de.muenchen.oss.refarch.integration.s3.domain.exception.S3Exception;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,8 +24,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
-    @ExceptionHandler(FileSystemAccessException.class)
-    public ResponseEntity<Object> handleFileSystemAccessException() {
+    @ExceptionHandler(S3Exception.class)
+    public ResponseEntity<Object> handleS3Exception() {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
 

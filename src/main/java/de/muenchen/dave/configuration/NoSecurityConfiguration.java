@@ -12,7 +12,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 @Configuration
 @Profile("no-security")
@@ -26,7 +26,8 @@ public class NoSecurityConfiguration {
     public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception {
         return http
                 .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
-                .authorizeHttpRequests(request -> request.requestMatchers(AntPathRequestMatcher.antMatcher("/**")).permitAll().anyRequest().permitAll())
+                .authorizeHttpRequests(
+                        request -> request.requestMatchers(PathPatternRequestMatcher.withDefaults().matcher("/**")).permitAll().anyRequest().permitAll())
                 .csrf(AbstractHttpConfigurer::disable)
                 .build();
     }
